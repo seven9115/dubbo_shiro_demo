@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Mapper.UserMapper">
+
+	<select id="findByUsername" parameterType="java.lang.String" resultType="Bean.User">
+		select id,username,password,salt from sys_user where username=#{username}
+	</select>
+
+	<select id="findRoles" parameterType="java.lang.String" resultType="java.lang.String">
+		select role_ids from sys_user where username=#{username} order by id
+	</select>
+
+	<select id="findPermissions" parameterType="java.lang.String" resultType="java.lang.String">
+		select permission from sys_authority where role_id in (select role_ids from sys_user where username=#{username})
+		order by id;
+	</select>
+
+</mapper>

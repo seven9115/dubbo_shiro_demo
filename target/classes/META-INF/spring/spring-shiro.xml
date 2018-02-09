@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<bean id="hashService" class="org.apache.shiro.crypto.hash.DefaultHashService"/>
+
+	<bean id="hashFormat" class="org.apache.shiro.crypto.hash.format.Shiro1CryptFormat"/>
+
+	<bean id="hashFormatFactory" class="org.apache.shiro.crypto.hash.format.DefaultHashFormatFactory"/>
+
+	<bean id="passwordService" class="org.apache.shiro.authc.credential.DefaultPasswordService">
+		<property name="hashService" ref="hashService"/>
+		<property name="hashFormat" ref="hashFormat"/>
+		<property name="hashFormatFactory" ref="hashFormatFactory"/>
+	</bean>
+
+	<bean id="credentialsMatcher" class="CredentialsMatcher.RetryLimitHashedCredentialsMatcher">
+		<property name="passwordService" ref="passwordService"/>
+	</bean>
+
+	<bean id="userRealm" class="Realm.UserRealm">
+		<property name="passwordService" ref="passwordService"/>
+		<property name="credentialsMatcher" ref="credentialsMatcher"/>
+	</bean>
+
+	<!-- 安全管理器 -->
+	<bean id="securityManager" class="org.apache.shiro.mgt.DefaultSecurityManager">
+		<property name="realms">
+			<list>
+				<ref bean="userRealm"/>
+			</list>
+		</property>
+	</bean>
+	<!-- 相当于调用SecurityUtils.setSecurityManager(securityManager) -->
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod"
+		          value="org.apache.shiro.SecurityUtils.setSecurityManager"/>
+		<property name="arguments" ref="securityManager"/>
+	</bean>
+	<!-- Shiro生命周期处理器-->
+	<bean id="lifecycleBeanPostProcessor"
+	      class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+</beans>
